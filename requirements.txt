@@ -1,0 +1,23 @@
+# LXMC to CSV Converter
+# 本项目不需要任何第三方依赖，仅使用Python标准库
+
+# Python版本要求:
+# Python >= 3.6
+
+# 标准库模块（无需安装）:
+# - os
+# - sys
+# - json
+# - time
+# - zipfile
+# - gzip
+# - hashlib
+# - re
+# - pathlib
+# - typing
+# - collections
+# - threading
+# - io (仅Windows)
+
+# 开发工具（可选，仅用于打包EXE）:
+# pyinstaller>=5.0  # 用于创建Windows EXE文件
