@@ -11,6 +11,7 @@ import json
 import time
 import zipfile
 import gzip
+import csv
 import hashlib
 import re
 from pathlib import Path
@@ -477,7 +478,7 @@ def extract_album_name(song: Dict) -> str:
 
 def export_to_csv(songs: List[Dict], output_path: str) -> Tuple[bool, str]:
     """
-    将歌曲列表导出为CSV文件
+    将歌曲列表导出为CSV文件（使用csv模块处理转义）
     
     CSV格式:
     第一行: "Track name,Artist name,Album"
@@ -500,21 +501,28 @@ def export_to_csv(songs: List[Dict], output_path: str) -> Tuple[bool, str]:
             os.makedirs(output_dir, exist_ok=True)
         
         with open(output_path, 'w', encoding='utf-8', newline='') as f:
+            # 使用csv模块的writer来处理转义和特殊字符
+            writer = csv.writer(f, quoting=csv.QUOTE_MINIMAL)
+            
             # 写入标题行
-            f.write(CSV_HEADER + '\n')
+            writer.writerow(['Track name', 'Artist name', 'Album'])
             
             # 写入每首歌曲
             for song in songs:
-                name = song.get('name', '').replace(',', '，')  # 避免逗号破坏CSV格式
-                singer = song.get('singer', '').replace(',', '，')
-                album = extract_album_name(song).replace(',', '，')
+                name = song.get('name', '')
+                singer = song.get('singer', '')
+                album = extract_album_name(song)
                 
-                # 处理可能包含换行符的字段
-                name = name.replace('\n', '').replace('\r', '')
-                singer = singer.replace('\n', '').replace('\r', '')
-                album = album.replace('\n', '').replace('\r', '')
+                # 清理换行符，但保留其他字符让csv模块处理转义
+                name = name.replace('\n', ' ').replace('\r', ' ')
+                singer = singer.replace('\n', ' ').replace('\r', ' ')
+                album = album.replace('\n', ' ').replace('\r', ' ')
                 
-                f.write(f"{name},{singer},{album}\n")
+                # csv.writer会自动处理：
+                # - 包含逗号的字段会用引号括起来
+                # - 包含引号的字段会进行转义
+                # - 包含换行符的字段也会处理（但我们已经清理了换行符）
+                writer.writerow([name, singer, album])
         
         return True, f"成功导出到: {output_path}"
     
